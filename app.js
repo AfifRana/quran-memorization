@@ -29,10 +29,10 @@ async function initializeApp() {
     try {
         // Load cached data
         loadLocalStats();
-        
+
         // Fetch Surahs
         await fetchSurahs();
-        
+
         // Register Service Worker
         if ('serviceWorker' in navigator) {
             try {
@@ -42,28 +42,40 @@ async function initializeApp() {
                 console.log('Service Worker registration failed:', error);
             }
         }
-        
-        // Hide loading screen
-        setTimeout(() => {
-            hideScreen('loading-screen');
-            showScreen('main-menu');
-        }, 1500);
     } catch (error) {
         console.error('Initialization error:', error);
         alert('Failed to load data. Please check your connection.');
+    } finally {
+        // Always hide loading screen and attempt to show main menu (guard DOM access)
+        setTimeout(() => {
+            const loading = document.getElementById('loading-screen');
+            if (loading) loading.classList.remove('active');
+            
+            // Wait for fade out, then fade in menu
+            setTimeout(() => {
+                const main = document.getElementById('main-menu');
+                if (main) main.classList.add('active');
+            }, 500);
+        }, 1500);
     }
 }
 
 // Screen Navigation
 function showScreen(screenId) {
-    document.querySelectorAll('.screen').forEach(screen => {
-        screen.classList.remove('active');
-    });
-    document.getElementById(screenId).classList.add('active');
+    const screens = document.querySelectorAll('.screen');
+    if (screens && screens.length) {
+        screens.forEach(screen => {
+            screen.classList.remove('active');
+        });
+    }
+
+    const el = document.getElementById(screenId);
+    if (el) el.classList.add('active');
 }
 
 function hideScreen(screenId) {
-    document.getElementById(screenId).classList.remove('active');
+    const el = document.getElementById(screenId);
+    if (el) el.classList.remove('active');
 }
 
 function showMainMenu() {

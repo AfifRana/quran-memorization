@@ -1,12 +1,11 @@
-const CACHE_NAME = 'quran-game-v1';
+const CACHE_NAME = 'quran-game-v3';
 const urlsToCache = [
   '/',
   '/index.html',
   '/styles.css',
   '/app.js',
   '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png'
+  '/icon.svg'
 ];
 
 // Install Service Worker
