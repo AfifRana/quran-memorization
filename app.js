@@ -136,8 +136,10 @@ async function fetchSurahDetails(surahNumber) {
         }
     } catch (error) {
         console.error('Error fetching surah details:', error);
-        return null;
     }
+    
+    // Return fallback data if API fails
+    return getFallbackSurahDetails(surahNumber);
 }
 
 // Render Surah List
@@ -174,6 +176,12 @@ async function startGame(gameType) {
     // If no surah selected, use Al-Fatihah (1)
     if (!state.currentSurah) {
         state.currentSurah = await fetchSurahDetails(1);
+    }
+    
+    // Verify surah loaded
+    if (!state.currentSurah) {
+        alert('Failed to load Surah data. Please try again.');
+        return;
     }
     
     document.getElementById('current-surah').textContent = state.currentSurah.nama_latin;
@@ -590,6 +598,88 @@ function getFallbackSurahs() {
         { nomor: 4, nama: "النساء", nama_latin: "An-Nisa", arti: "The Women" },
         { nomor: 5, nama: "المائدة", nama_latin: "Al-Ma'idah", arti: "The Table" }
     ];
+}
+
+function getFallbackSurahDetails(surahNumber) {
+    // Fallback data for Al-Fatihah with sample ayat
+    if (surahNumber === 1) {
+        return {
+            nomor: 1,
+            nama: "الفاتحة",
+            nama_latin: "Al-Fatihah",
+            arti: "The Opening",
+            jumlah_ayat: 7,
+            ayat: [
+                {
+                    nomor: 1,
+                    ar: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+                    tr: "Bismillaahir Rahmaanir Raheem",
+                    idn: "Dengan nama Allah Yang Maha Pengasih, Maha Penyayang"
+                },
+                {
+                    nomor: 2,
+                    ar: "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
+                    tr: "Alhamdu lillaahi Rabbil 'aalameen",
+                    idn: "Segala puji bagi Allah, Tuhan seluruh alam"
+                },
+                {
+                    nomor: 3,
+                    ar: "الرَّحْمَٰنِ الرَّحِيمِ",
+                    tr: "Ar-Rahmaanir-Raheem",
+                    idn: "Yang Maha Pengasih, Maha Penyayang"
+                },
+                {
+                    nomor: 4,
+                    ar: "مَالِكِ يَوْمِ الدِّينِ",
+                    tr: "Maaliki Yawmid-Deen",
+                    idn: "Pemilik hari pembalasan"
+                },
+                {
+                    nomor: 5,
+                    ar: "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+                    tr: "Iyyaaka na'budu wa lyyaaka nasta'een",
+                    idn: "Hanya kepada Engkaulah kami menyembah dan hanya kepada Engkaulah kami mohon pertolongan"
+                },
+                {
+                    nomor: 6,
+                    ar: "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ",
+                    tr: "Ihdinas-Siraatal-Mustaqeem",
+                    idn: "Tunjukilah kami jalan yang lurus"
+                },
+                {
+                    nomor: 7,
+                    ar: "صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ",
+                    tr: "Siraatal-lazeena an'amta 'alaihim ghayril-maghdoobi 'alaihim wa lad-daaalleen",
+                    idn: "(yaitu) jalan orang-orang yang telah Engkau beri nikmat kepadanya; bukan (jalan) mereka yang dimurkai, dan bukan (pula jalan) mereka yang sesat"
+                }
+            ]
+        };
+    }
+    
+    // For other surahs, return a simple structure
+    const surah = state.surahs.find(s => s.nomor === surahNumber);
+    if (surah) {
+        return {
+            ...surah,
+            jumlah_ayat: 7,
+            ayat: [
+                {
+                    nomor: 1,
+                    ar: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+                    tr: "Bismillaahir Rahmaanir Raheem",
+                    idn: "Dengan nama Allah Yang Maha Pengasih, Maha Penyayang"
+                },
+                {
+                    nomor: 2,
+                    ar: "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
+                    tr: "Alhamdu lillaahi Rabbil 'aalameen",
+                    idn: "Segala puji bagi Allah, Tuhan seluruh alam"
+                }
+            ]
+        };
+    }
+    
+    return null;
 }
 
 // Install prompt for PWA
