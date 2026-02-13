@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4CAF50">
+    <meta name="description" content="Fun Quran memorization game for kids">
+    <title>Quran Memorization Game</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="screen active">
+            <div class="loading-container">
+                <div class="loading-spinner"></div>
+                <h2>Loading Quran...</h2>
+                <div class="loading-bar">
+                    <div class="loading-progress"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Menu -->
+        <div id="main-menu" class="screen">
+            <div class="container">
+                <h1 class="title rainbow-text">🌟 Quran Memory Game 🌟</h1>
+                <div class="menu-buttons">
+                    <button class="btn btn-primary" onclick="showGameMode()">
+                        🎮 Play Game
+                    </button>
+                    <button class="btn btn-secondary" onclick="showMultiplayerMenu()">
+                        👥 Multiplayer
+                    </button>
+                    <button class="btn btn-info" onclick="showSurahSelector()">
+                        📖 Select Surah
+                    </button>
+                </div>
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <span class="stat-icon">⭐</span>
+                        <span class="stat-value" id="total-score">0</span>
+                        <span class="stat-label">Total Score</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon">🏆</span>
+                        <span class="stat-value" id="games-played">0</span>
+                        <span class="stat-label">Games Played</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Mode Selection -->
+        <div id="game-mode-screen" class="screen">
+            <div class="container">
+                <h2 class="title">Choose Your Game!</h2>
+                <div class="game-modes">
+                    <div class="game-card" onclick="startGame('continue')">
+                        <div class="game-icon">📝</div>
+                        <h3>Continue Ayat</h3>
+                        <p>Complete the verse!</p>
+                    </div>
+                    <div class="game-card" onclick="startGame('puzzle')">
+                        <div class="game-icon">🧩</div>
+                        <h3>Puzzle Ayat</h3>
+                        <p>Arrange the words!</p>
+                    </div>
+                    <div class="game-card" onclick="startGame('guess')">
+                        <div class="game-icon">🤔</div>
+                        <h3>Guess Ayat</h3>
+                        <p>Find the right verse!</p>
+                    </div>
+                </div>
+                <button class="btn btn-back" onclick="showMainMenu()">⬅️ Back</button>
+            </div>
+        </div>
+
+        <!-- Surah Selector -->
+        <div id="surah-selector" class="screen">
+            <div class="container">
+                <h2 class="title">Select a Surah</h2>
+                <div class="surah-list" id="surah-list">
+                    <!-- Dynamically populated -->
+                </div>
+                <button class="btn btn-back" onclick="showMainMenu()">⬅️ Back</button>
+            </div>
+        </div>
+
+        <!-- Multiplayer Menu -->
+        <div id="multiplayer-menu" class="screen">
+            <div class="container">
+                <h2 class="title">Multiplayer Mode</h2>
+                <div class="multiplayer-options">
+                    <div class="mp-card">
+                        <h3>🏠 Host Game</h3>
+                        <input type="text" id="room-name" placeholder="Enter room name" class="input-field">
+                        <button class="btn btn-primary" onclick="hostGame()">Create Room</button>
+                    </div>
+                    <div class="mp-card">
+                        <h3>🔍 Join Game</h3>
+                        <input type="text" id="join-room-name" placeholder="Enter room name" class="input-field">
+                        <button class="btn btn-secondary" onclick="joinGame()">Join Room</button>
+                    </div>
+                </div>
+                <div id="room-info" class="room-info" style="display: none;">
+                    <h3>Room: <span id="current-room"></span></h3>
+                    <p>Players: <span id="player-count">1</span></p>
+                    <button class="btn btn-success" onclick="startMultiplayerGame()">Start Game</button>
+                </div>
+                <button class="btn btn-back" onclick="showMainMenu()">⬅️ Back</button>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <div class="game-header">
+                <div class="game-info">
+                    <span class="info-item">📖 <span id="current-surah">Al-Fatihah</span></span>
+                    <span class="info-item">⭐ Score: <span id="game-score">0</span></span>
+                    <span class="info-item">⏱️ <span id="game-timer">00:00</span></span>
+                </div>
+            </div>
+            
+            <div class="game-container">
+                <!-- Continue Ayat Game -->
+                <div id="continue-game" class="game-content">
+                    <div class="question-box">
+                        <p class="arabic-text" id="continue-question"></p>
+                    </div>
+                    <div class="options-container" id="continue-options">
+                        <!-- Options will be dynamically added -->
+                    </div>
+                </div>
+
+                <!-- Puzzle Ayat Game -->
+                <div id="puzzle-game" class="game-content">
+                    <div class="puzzle-container">
+                        <div class="drop-zone" id="puzzle-drop-zone">
+                            <!-- Drop zone for words -->
+                        </div>
+                        <div class="word-bank" id="puzzle-word-bank">
+                            <!-- Draggable words -->
+                        </div>
+                        <button class="btn btn-success" onclick="checkPuzzleAnswer()">Check Answer</button>
+                    </div>
+                </div>
+
+                <!-- Guess Ayat Game -->
+                <div id="guess-game" class="game-content">
+                    <div class="hint-box">
+                        <p id="guess-hint"></p>
+                    </div>
+                    <div class="options-container" id="guess-options">
+                        <!-- Options will be dynamically added -->
+                    </div>
+                </div>
+
+                <!-- Result Display -->
+                <div id="result-display" class="result-display">
+                    <div class="result-content">
+                        <div id="result-icon"></div>
+                        <h2 id="result-message"></h2>
+                        <p id="result-detail"></p>
+                        <div class="result-buttons">
+                            <button class="btn btn-primary" onclick="nextQuestion()">Next ➡️</button>
+                            <button class="btn btn-secondary" onclick="showMainMenu()">Menu</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
