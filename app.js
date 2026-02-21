@@ -17,8 +17,50 @@ const state = {
     }
 };
 
+// App Version for cache/localStorage invalidation
+const APP_VERSION = '1.0.0';
+
+// LocalStorage TTL (5 minutes in milliseconds)
+const LOCALSTORAGE_TTL = 5 * 60 * 1000;
+
 // API Configuration
 const API_BASE_URL = 'https://quran-api.santrikoding.com/api';
+
+// Helper functions for localStorage with TTL
+function setLocalStorageWithTTL(key, value) {
+    const item = {
+        data: value,
+        timestamp: Date.now()
+    };
+    localStorage.setItem(key, JSON.stringify(item));
+}
+
+function getLocalStorageWithTTL(key) {
+    const item = localStorage.getItem(key);
+    if (!item) return null;
+    
+    try {
+        const parsed = JSON.parse(item);
+        if (Date.now() - parsed.timestamp > LOCALSTORAGE_TTL) {
+            localStorage.removeItem(key);
+            return null;
+        }
+        return parsed.data;
+    } catch (e) {
+        localStorage.removeItem(key);
+        return null;
+    }
+}
+
+// Check and clear stale localStorage
+function checkAndClearStaleStorage() {
+    const storedVersion = localStorage.getItem('appVersion');
+    if (storedVersion !== APP_VERSION) {
+        console.log('App version changed, clearing localStorage');
+        localStorage.clear();
+        localStorage.setItem('appVersion', APP_VERSION);
+    }
+}
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', async () => {
@@ -27,6 +69,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function initializeApp() {
     try {
+        // Check for stale localStorage and clear if needed
+        checkAndClearStaleStorage();
+
         // Load cached data
         loadLocalStats();
 
@@ -106,9 +151,9 @@ function showMultiplayerMenu() {
 async function fetchSurahs() {
     try {
         // Check cache first
-        const cached = localStorage.getItem('surahs');
+        const cached = getLocalStorageWithTTL('surahs');
         if (cached) {
-            state.surahs = JSON.parse(cached);
+            state.surahs = cached;
             console.log('Loaded surahs from cache');
             return;
         }
@@ -119,7 +164,7 @@ async function fetchSurahs() {
         if (data && data.data) {
             state.surahs = data.data;
             // Cache the data
-            localStorage.setItem('surahs', JSON.stringify(data.data));
+            setLocalStorageWithTTL('surahs', data.data);
             console.log('Fetched and cached surahs:', state.surahs.length);
         }
     } catch (error) {
@@ -133,9 +178,9 @@ async function fetchSurahDetails(surahNumber) {
     try {
         // Check cache first
         const cacheKey = `surah_${surahNumber}`;
-        const cached = localStorage.getItem(cacheKey);
+        const cached = getLocalStorageWithTTL(cacheKey);
         if (cached) {
-            return JSON.parse(cached);
+            return cached;
         }
         
         const response = await fetch(`${API_BASE_URL}/surah/${surahNumber}`);
@@ -143,7 +188,7 @@ async function fetchSurahDetails(surahNumber) {
         
         if (data && data.data) {
             // Cache the surah details
-            localStorage.setItem(cacheKey, JSON.stringify(data.data));
+            setLocalStorageWithTTL(cacheKey, data.data);
             return data.data;
         }
     } catch (error) {
@@ -519,11 +564,11 @@ function hostGame() {
     alert(`Room "${roomName}" created! Share this room name with your friends.`);
     
     // Store room in localStorage for local network simulation
-    localStorage.setItem(`room_${roomName}`, JSON.stringify({
+    setLocalStorageWithTTL(`room_${roomName}`, {
         host: true,
         players: 1,
         timestamp: Date.now()
-    }));
+    });
 }
 
 function joinGame() {
@@ -534,7 +579,7 @@ function joinGame() {
     }
     
     // Check if room exists (simulated)
-    const room = localStorage.getItem(`room_${roomName}`);
+    const room = getLocalStorageWithTTL(`room_${roomName}`);
     if (!room) {
         alert('Room not found. Please check the room name.');
         return;
@@ -547,9 +592,9 @@ function joinGame() {
     document.getElementById('room-info').style.display = 'block';
     document.getElementById('current-room').textContent = roomName;
     
-    const roomData = JSON.parse(room);
+    const roomData = room;
     roomData.players++;
-    localStorage.setItem(`room_${roomName}`, JSON.stringify(roomData));
+    setLocalStorageWithTTL(`room_${roomName}`, roomData);
     
     document.getElementById('player-count').textContent = roomData.players;
     
@@ -576,11 +621,10 @@ function shuffleArray(array) {
 }
 
 function loadLocalStats() {
-    const stats = localStorage.getItem('gameStats');
+    const stats = getLocalStorageWithTTL('gameStats');
     if (stats) {
-        const parsed = JSON.parse(stats);
-        state.score = parsed.totalScore || 0;
-        state.gamesPlayed = parsed.gamesPlayed || 0;
+        state.score = stats.totalScore || 0;
+        state.gamesPlayed = stats.gamesPlayed || 0;
         
         document.getElementById('total-score').textContent = state.score;
         document.getElementById('games-played').textContent = state.gamesPlayed;
@@ -595,7 +639,7 @@ function saveLocalStats() {
         gamesPlayed: state.gamesPlayed
     };
     
-    localStorage.setItem('gameStats', JSON.stringify(stats));
+    setLocalStorageWithTTL('gameStats', stats);
     
     document.getElementById('total-score').textContent = state.score;
     document.getElementById('games-played').textContent = state.gamesPlayed;
